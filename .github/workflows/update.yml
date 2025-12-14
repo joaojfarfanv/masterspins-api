@@ -1,0 +1,27 @@
+name: Actualizar Links
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Ejecutar cada hora
+  workflow_dispatch: # Botón manual
+
+permissions:
+  contents: write
+
+jobs:
+  run-scraper:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - run: pip install -r requirements.txt
+      - run: python scraper.py
+      - name: Guardar cambios
+        run: |
+          git config --global user.name 'Bot'
+          git config --global user.email 'bot@noreply.github.com'
+          git add rewards.json
+          git commit -m "Nuevos links" || exit 0
+          git push
