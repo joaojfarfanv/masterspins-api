@@ -13,51 +13,54 @@ def update_spins():
         soup = BeautifulSoup(response.text, 'html.parser')
         
         rewards = []
-        
-        # BUSCAMOS TODOS LOS ENLACES DE LA PÁGINA
         all_links = soup.find_all('a')
         
-        # Aumentamos el límite a 50 para que traiga los de días anteriores
-        count = 0
-        MAX_LINKS = 50 
+        rewards_found = 0
+        MAX_REWARDS = 50 
 
         for link in all_links:
-            if count >= MAX_LINKS: break
-            if not link.get('href'): continue
+            if rewards_found >= MAX_REWARDS: break
             
-            href = link['href']
+            href = link.get('href')
+            if not href: continue
+            
             text = link.get_text().strip()
 
-            # LÓGICA V3: Aceptamos todo lo que parezca premio
-            is_valid_url = "levvvel.com" in href or "moonactive" in href
-            # Buscamos palabras clave en el texto O en la URL
-            is_reward = "spin" in text.lower() or "coin" in text.lower() or "collect" in text.lower()
-
-            if is_valid_url and is_reward:
-                # Limpiamos el título
+            # --- CORRECCIÓN CRÍTICA ---
+            # 1. Solo aceptamos enlaces que vayan a los servidores del juego (moonactive)
+            # 2. PROHIBIMOS enlaces que contengan "levvvel" (para que no abra la web de noticias)
+            is_game_link = "moonactive" in href 
+            
+            # Filtro extra: a veces los enlaces del juego vienen vacíos de texto,
+            # pero si la URL es correcta, nos sirve igual.
+            if is_game_link:
+                # Crear un título bonito
                 title = text
-                if "collect" in title.lower() or len(title) < 5:
+                if not title or "collect" in title.lower() or len(title) < 5:
                     title = "Tiradas y Monedas Gratis"
                 
-                # Evitamos duplicados exactos si la página repite links
+                # Evitar duplicados
                 is_duplicate = any(r['url'] == href for r in rewards)
                 
                 if not is_duplicate:
                     rewards.append({
                         "title": title,
-                        "url": href,
-                        "date": "Disponible" # Simplificamos la fecha
+                        "url": href, # Este link abrirá la app directamente
+                        "date": "Disponible"
                     })
-                    count += 1
+                    rewards_found += 1
 
-        # Guardamos todo
+        # Guardar todo
         with open('rewards.json', 'w') as f:
             json.dump(rewards, f, indent=2)
             
-        print(f"¡Éxito! Se encontraron {len(rewards)} premios.")
+        print(f"¡Éxito! Se encontraron {len(rewards)} premios OFICIALES.")
 
     except Exception as e:
         print(f"Error: {e}")
+
+if __name__ == "__main__":
+    update_spins()
 
 if __name__ == "__main__":
     update_spins()
