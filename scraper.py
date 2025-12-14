@@ -2,7 +2,6 @@ import requests
 from bs4 import BeautifulSoup
 import json
 
-# Usaremos LEVVVEL que es muy estable, pero con una búsqueda más agresiva
 URL = "https://levvvel.com/coin-master-free-spins/"
 
 def update_spins():
@@ -15,47 +14,47 @@ def update_spins():
         
         rewards = []
         
-        # ESTRATEGIA V2: Buscar todos los enlaces que digan "Collect" o "Spins"
-        # Esto funciona aunque cambien el diseño (divs, clases, tablas)
+        # BUSCAMOS TODOS LOS ENLACES DE LA PÁGINA
         all_links = soup.find_all('a')
-
+        
+        # Aumentamos el límite a 50 para que traiga los de días anteriores
         count = 0
+        MAX_LINKS = 50 
+
         for link in all_links:
+            if count >= MAX_LINKS: break
             if not link.get('href'): continue
             
-            text = link.get_text().strip().lower()
             href = link['href']
+            text = link.get_text().strip()
 
-            # Filtros para saber si es un premio real
-            is_reward = "collect" in text or "spins" in text
-            is_valid_url = href.startswith("http") and ("levvvel" in href or "moonactive" in href)
+            # LÓGICA V3: Aceptamos todo lo que parezca premio
+            is_valid_url = "levvvel.com" in href or "moonactive" in href
+            # Buscamos palabras clave en el texto O en la URL
+            is_reward = "spin" in text.lower() or "coin" in text.lower() or "collect" in text.lower()
 
-            if is_reward and is_valid_url and count < 5: # Limitamos a los 5 más nuevos
-                # Creamos un título genérico
-                title = link.get_text().strip()
-                if not title or title.lower() == "collect":
+            if is_valid_url and is_reward:
+                # Limpiamos el título
+                title = text
+                if "collect" in title.lower() or len(title) < 5:
                     title = "Tiradas y Monedas Gratis"
                 
-                rewards.append({
-                    "title": title,
-                    "url": href,
-                    "date": "Nuevo" 
-                })
-                count += 1
+                # Evitamos duplicados exactos si la página repite links
+                is_duplicate = any(r['url'] == href for r in rewards)
+                
+                if not is_duplicate:
+                    rewards.append({
+                        "title": title,
+                        "url": href,
+                        "date": "Disponible" # Simplificamos la fecha
+                    })
+                    count += 1
 
-        # Si no encontramos nada, añadimos uno de prueba para que la App no se vea vacía
-        if not rewards:
-            rewards.append({
-                "title": "Prueba de Sistema (No hay links detectados)",
-                "url": "https://google.com",
-                "date": "Hoy"
-            })
-
-        # Guardar archivo
+        # Guardamos todo
         with open('rewards.json', 'w') as f:
             json.dump(rewards, f, indent=2)
             
-        print(f"¡Actualizado! Se encontraron {len(rewards)} premios.")
+        print(f"¡Éxito! Se encontraron {len(rewards)} premios.")
 
     except Exception as e:
         print(f"Error: {e}")
