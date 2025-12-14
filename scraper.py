@@ -2,12 +2,12 @@ import requests
 from bs4 import BeautifulSoup
 import json
 
-# Usamos Levvvel porque actualiza más rápido que nadie
+# Fuente: Levvvel (La mejor base de datos, pero limpiaremos su basura)
 URL = "https://levvvel.com/coin-master-free-spins/"
 
 def update_spins():
     try:
-        # Nos hacemos pasar por un navegador real de PC
+        # 1. Nos disfrazamos de navegador PC para que nos den la web completa
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         }
@@ -15,60 +15,60 @@ def update_spins():
         soup = BeautifulSoup(response.text, 'html.parser')
         
         rewards = []
-        # Buscamos TODOS los enlaces de la web
         all_links = soup.find_all('a')
         
-        found_urls = set() # Para no repetir links
+        found_urls = set() 
         
         for link in all_links:
             href = link.get('href')
-            text = link.get_text().strip().lower() # Texto en minúsculas
+            text = link.get_text().strip().lower()
             
             if not href: continue
 
-            # --- LA LÓGICA MAESTRA ---
-            
-            # 1. ¿Es un link que habla de premios? (Busca "spin" o "coin")
+            # --- FILTRO MAESTRO (ANTI-PUBLICIDAD) ---
+
+            # 1. REGLA DE ORO: Si el link se queda en "levvvel.com", ES BASURA (Menú/Noticia/Publicidad).
+            if "levvvel.com" in href: continue
+
+            # 2. REGLA DE PLATA: Solo queremos links que vayan al servidor del juego
+            # Los links oficiales siempre contienen "moonactive" o "coinmaster.com"
+            is_game_link = "moonactive" in href or "coinmaster.com" in href
+
+            # 3. Validar texto (Spins/Coins) para asegurarnos
             is_reward_text = "spin" in text or "coin" in text
-            
-            # 2. Palabras prohibidas (para no guardar guías o menús)
-            bad_words = ["guide", "trick", "wiki", "strategy", "village", "cost", "event", "facebook", "twitter"]
-            is_garbage = any(word in href.lower() for word in bad_words) or any(word in text for word in bad_words)
 
-            # 3. Filtro de seguridad: El link debe ser largo (los links cortos suelen ser menús)
-            is_good_length = len(href) > 15
-
-            if is_reward_text and not is_garbage and is_good_length:
+            # Solo guardamos si es un link OFICIAL del juego
+            if is_game_link:
                 
-                # Si ya tenemos este link, pasamos al siguiente
                 if href in found_urls: continue
                 
-                # CREAR TÍTULO: Usamos el texto original (Ej: "25 Spins")
-                # .title() pone la primera letra en mayúscula
+                # Crear título bonito
                 pretty_title = link.get_text().strip().title()
                 
-                # Si el título es muy feo o vacío, ponemos uno por defecto
-                if len(pretty_title) < 5: 
-                    pretty_title = "Premio Sorpresa (Tiradas/Monedas)"
+                # Si el link no tiene texto, le ponemos uno genérico
+                if len(pretty_title) < 4: 
+                    pretty_title = "¡Premio Sorpresa!"
 
                 rewards.append({
-                    "title": pretty_title, # Aquí saldrá "50 Spins", "25 Spins", etc.
-                    "url": href,
+                    "title": pretty_title, # Saldrá "25 Spins", etc.
+                    "url": href,           # Link directo (sin publicidad)
                     "date": "Disponible"
                 })
                 found_urls.add(href)
 
-        # Limitamos a los últimos 15 premios para no llenar el celular de basura antigua
+        # Guardar los últimos 15 (Los más nuevos)
         final_rewards = rewards[:15]
 
-        # Guardar archivo
         with open('rewards.json', 'w') as f:
             json.dump(final_rewards, f, indent=2)
             
-        print(f"¡Éxito! Se encontraron {len(final_rewards)} premios variados.")
+        print(f"¡Limpieza total! Se guardaron {len(final_rewards)} premios DIRECTOS (Sin publicidad).")
 
     except Exception as e:
-        print(f"Error crítico: {e}")
+        print(f"Error: {e}")
+
+if __name__ == "__main__":
+    update_spins()
 
 if __name__ == "__main__":
     update_spins()
