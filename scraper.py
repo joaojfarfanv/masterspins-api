@@ -11,13 +11,23 @@ JSON_FILE = 'rewards.json'
 # --- CREDENCIALES ---
 ONESIGNAL_APP_ID = "7d8ae299-535f-4bbf-a14b-28852b836721"
 
-# 🔥 CLAVE NUEVA (La que venía en tu código, termina en ...dlrry)
-ONESIGNAL_API_KEY = "os_v2_app_pwfofgktl5f37iklfccsxa3heegc4nt5z64eb4ecvto36lkbwbtpctdlltbkpwowxg7sdc27jvihqk5yqaytld4zx6w7tlkxos3fryi".strip()
+# 🔒 SEGURIDAD MÁXIMA:
+# Ahora el código busca la llave en los "Secretos" de GitHub.
+# Ya NO la escribimos aquí para que no se borre ni te la roben.
+ONESIGNAL_API_KEY = os.environ.get("ONESIGNAL_API_KEY")
 
 def send_notification(title, url):
     """Envía notificación con DATA oculta para que abra la APP (Monetización)"""
     
-    print(f"🔑 VERIFICANDO: La clave termina en ...{ONESIGNAL_API_KEY[-5:]}") 
+    # Verificación de seguridad: Si no encuentra la llave en la caja fuerte, avisa.
+    if not ONESIGNAL_API_KEY:
+        print("❌ ERROR CRÍTICO: No se encontró la llave API.")
+        print("👉 Si estás en tu PC: Configura la variable de entorno.")
+        print("👉 Si estás en GitHub: Asegúrate de haber creado el Secret 'ONESIGNAL_API_KEY'.")
+        return
+
+    # Solo mostramos los últimos 5 caracteres para verificar que cargó bien
+    print(f"🔑 Llave cargada desde Secrets (Termina en ...{ONESIGNAL_API_KEY[-5:]})") 
     
     header = {
         "Content-Type": "application/json; charset=utf-8",
@@ -29,10 +39,7 @@ def send_notification(title, url):
         "headings": {"en": "🎁 ¡Nuevo Premio!", "es": "🎁 ¡Nuevo Premio!"},
         "contents": {"en": "Toca aquí para reclamar tus tiradas", "es": "Toca aquí para reclamar tus tiradas"},
         
-        # ⛔ ELIMINADO: Ya no enviamos "url" directo para que no salte al navegador.
-        # "url": url, 
-        
-        # ✅ AGREGADO: Enviamos el link en "data". Tu App debe leer "click_url".
+        # ✅ Enviamos el link en "data". Tu App debe leer "click_url".
         "data": {"click_url": url},
         
         "included_segments": ["Total Subscriptions"]
