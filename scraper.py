@@ -8,34 +8,46 @@ import os
 URL = "https://levvvel.com/coin-master-free-spins/"
 JSON_FILE = 'rewards.json'
 
-# Credenciales OneSignal (La configuración que YA CONFIRMAMOS que funciona)
+# --- CREDENCIALES ---
 ONESIGNAL_APP_ID = "7d8ae299-535f-4bbf-a14b-28852b836721"
 
-# Tu llave tipo V2 (requiere Bearer)
-ONESIGNAL_API_KEY = "os_v2_app_pwfofgktl5f37iklfccsxa3heeciqsusjyyeoee6wyaovhblhx5m4c4k5lyhdalchkymq3lumf36g46laxay6mljnvrjc2cevpbhhqq".strip()
+# 🔥 CLAVE CORRECTA (La de la foto que termina en ...hhqq)
+ONESIGNAL_API_KEY = "os_v2_app_pwfofgktl5f37iklfccsxa3hegxbmhjxb4sejz4iysp346orbznun5ftncebrmabe3ngo42rf24yofomhcxprl2zthajx4h742dlrry".strip()
 
 def send_notification(title, url):
-    """Envía notificación a todos los usuarios"""
+    """Envía notificación usando la configuración Bearer (V2)"""
+    
+    # Esta línea nos confirmará si estás usando el archivo nuevo
+    print(f"🔑 VERIFICANDO: La clave termina en ...{ONESIGNAL_API_KEY[-5:]}") 
+    
     header = {
         "Content-Type": "application/json; charset=utf-8",
-        # IMPORTANTE: Aquí está el cambio clave, usamos 'Bearer' en lugar de 'Key'
+        # IMPORTANTE: Usamos Bearer
         "Authorization": f"Bearer {ONESIGNAL_API_KEY}"
     }
+    
     payload = {
         "app_id": ONESIGNAL_APP_ID,
-        "headings": {"en": "🎁 ¡Nuevo Premio Disponible!", "es": "🎁 ¡Nuevo Premio Disponible!"},
+        "headings": {"en": "🎁 ¡Nuevo Premio!", "es": "🎁 ¡Nuevo Premio!"},
         "contents": {"en": title, "es": title},
         "url": url,
         "included_segments": ["Total Subscriptions"]
     }
+    
     try:
+        print("📡 Enviando petición a OneSignal...")
         req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
-        print(f"📡 Notificación enviada. Estado: {req.status_code}")
+        
+        if req.status_code == 200:
+            print(f"✅ ÉXITO: Notificación enviada (Estado 200).")
+        else:
+            print(f"❌ FALLÓ (Estado {req.status_code})")
+            print(f"🔍 Mensaje: {req.text}")
+            
     except Exception as e:
-        print(f"⚠️ Error enviando notificación: {e}")
+        print(f"⚠️ Error de conexión: {e}")
 
 def load_existing_urls():
-    """Carga URLs ya guardadas para evitar duplicados"""
     if os.path.exists(JSON_FILE):
         try:
             with open(JSON_FILE, 'r') as f:
@@ -56,7 +68,6 @@ def update_spins():
         existing_urls = load_existing_urls()
         current_found_urls = set()
         
-        # Buscar enlaces
         all_links = soup.find_all('a', href=True)
         count = 0
         new_reward_found = False
@@ -67,7 +78,6 @@ def update_spins():
             if "moonactive" in href or "coinmaster.com" in href:
                 if href in current_found_urls: continue
                 
-                # --- OBTENER TÍTULO ---
                 texto = link.get_text().strip()
                 parent_text = link.parent.get_text().strip() if link.parent else ""
                 full_text = parent_text if ("Collect" in texto or len(texto) < 3) else texto
@@ -82,20 +92,16 @@ def update_spins():
 
                 if len(titulo_final) > 30: titulo_final = "Tiradas Gratis"
 
-                # --- ASIGNAR FECHA ---
                 if count < 4: fecha = "HOY"
                 elif count < 8: fecha = "AYER"
                 else: fecha = "ANTERIOR"
 
-                # Guardar en lista
                 rewards.append({
                     "title": titulo_final,
                     "url": href,
                     "date": fecha
                 })
 
-                # --- LÓGICA DE NOTIFICACIÓN ---
-                # Si es el primer link de la lista (el más reciente) y NO estaba en el JSON anterior:
                 if count == 0 and href not in existing_urls:
                     print(f"🚀 ¡NUEVO PREMIO DETECTADO!: {titulo_final}")
                     send_notification(titulo_final, href)
@@ -105,14 +111,13 @@ def update_spins():
                 count += 1
                 if count >= 30: break
 
-        # Guardar JSON
         with open(JSON_FILE, 'w') as f:
             json.dump(rewards, f, indent=2)
             
         if new_reward_found:
-            print(f"✅ Listo: Se enviaron notificaciones de nuevos premios.")
+            print(f"✅ Proceso completado.")
         else:
-            print(f"✅ Listo: Base de datos actualizada (Sin premios nuevos).")
+            print(f"✅ Sin novedades.")
 
     except Exception as e:
         print(f"❌ Error general: {e}")
