@@ -2,13 +2,15 @@ import requests
 import json
 
 # TUS CREDENCIALES
-ONESIGNAL_APP_ID = "7d8ae299-535f-4bbf-a14b-28852b836721" 
-ONESIGNAL_API_KEY = "l55ihwmshellmbyom2ftbpso4"
+ONESIGNAL_APP_ID = "7d8ae299-535f-4bbf-a14b-28852b836721"
+# Usamos la clave 'Python' que creaste en la imagen:
+ONESIGNAL_API_KEY = "155ihwmshellmbyom2ftbpso4"
 
 def test_notification():
     header = {
         "Content-Type": "application/json; charset=utf-8",
-        "Authorization": f"Key {ONESIGNAL_API_KEY}"
+        # CORRECCIÓN IMPORTANTE: Aquí debe decir "Basic", no "Key"
+        "Authorization": f"Basic {ONESIGNAL_API_KEY}"
     }
     payload = {
         "app_id": ONESIGNAL_APP_ID,
@@ -17,9 +19,12 @@ def test_notification():
         "included_segments": ["Total Subscriptions"]
     }
     
-    req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
-    print(f"Estado: {req.status_code}")
-    print(req.text)
+    try:
+        req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
+        print(f"Estado: {req.status_code}")
+        print(req.text)
+    except Exception as e:
+        print(f"Error: {e}")
 
 if __name__ == "__main__":
     test_notification()
