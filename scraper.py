@@ -12,7 +12,7 @@ JSON_FILE = 'rewards.json'
 ONESIGNAL_APP_ID = "7d8ae299-535f-4bbf-a14b-28852b836721"
 
 # 🔥 CLAVE NUEVA (La que venía en tu código, termina en ...dlrry)
-ONESIGNAL_API_KEY = "os_v2_app_pwfofgktl5f37iklfccsxa3heenpqnrdvhyuhh5xk6k4dvy2elddzls2irtq3lgyof4pnnnhcvpa4loelglgpmwgctdfwscjw6pp2fa".strip()
+ONESIGNAL_API_KEY = "os_v2_app_pwfofgktl5f37iklfccsxa3heegc4nt5z64eb4ecvto36lkbwbtpctdlltbkpwowxg7sdc27jvihqk5yqaytld4zx6w7tlkxos3fryi".strip()
 
 def send_notification(title, url):
     """Envía notificación con DATA oculta para que abra la APP (Monetización)"""
