@@ -8,15 +8,18 @@ import os
 URL = "https://levvvel.com/coin-master-free-spins/"
 JSON_FILE = 'rewards.json'
 
-# Credenciales OneSignal
-ONESIGNAL_APP_ID = "7d8ae299-535f-4bbf-a14b-28852b836721"  # Ej: "b2f7f966-d8cc-11e4-bed1-df8f05be55ba"
-ONESIGNAL_API_KEY = "os_v2_app_pwfofgktl5f37iklfccsxa3heh4u2gairwjeqv4nendwoqymz65uqdpx3sutokduinay65ksui4zhy4vf4xwv2geu3f67d5il6hif5i"
+# Credenciales OneSignal (La configuración que YA CONFIRMAMOS que funciona)
+ONESIGNAL_APP_ID = "7d8ae299-535f-4bbf-a14b-28852b836721"
+
+# Tu llave tipo V2 (requiere Bearer)
+ONESIGNAL_API_KEY = "os_v2_app_pwfofgktl5f37iklfccsxa3heeciqsusjyyeoee6wyaovhblhx5m4c4k5lyhdalchkymq3lumf36g46laxay6mljnvrjc2cevpbhhqq".strip()
 
 def send_notification(title, url):
     """Envía notificación a todos los usuarios"""
     header = {
         "Content-Type": "application/json; charset=utf-8",
-        "Authorization": f"Key {ONESIGNAL_API_KEY}"
+        # IMPORTANTE: Aquí está el cambio clave, usamos 'Bearer' en lugar de 'Key'
+        "Authorization": f"Bearer {ONESIGNAL_API_KEY}"
     }
     payload = {
         "app_id": ONESIGNAL_APP_ID,
@@ -27,7 +30,7 @@ def send_notification(title, url):
     }
     try:
         req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
-        print(f"📡 Notificación enviada: {req.status_code}")
+        print(f"📡 Notificación enviada. Estado: {req.status_code}")
     except Exception as e:
         print(f"⚠️ Error enviando notificación: {e}")
 
@@ -44,6 +47,7 @@ def load_existing_urls():
 
 def update_spins():
     try:
+        print("🔄 Buscando nuevos premios...")
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
         response = requests.get(URL, headers=headers)
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -93,7 +97,7 @@ def update_spins():
                 # --- LÓGICA DE NOTIFICACIÓN ---
                 # Si es el primer link de la lista (el más reciente) y NO estaba en el JSON anterior:
                 if count == 0 and href not in existing_urls:
-                    print(f"🚀 Nuevo premio detectado: {titulo_final}")
+                    print(f"🚀 ¡NUEVO PREMIO DETECTADO!: {titulo_final}")
                     send_notification(titulo_final, href)
                     new_reward_found = True
 
@@ -105,7 +109,10 @@ def update_spins():
         with open(JSON_FILE, 'w') as f:
             json.dump(rewards, f, indent=2)
             
-        print(f"✅ Listo: {len(rewards)} premios procesados. Nuevos: {'SÍ' if new_reward_found else 'NO'}.")
+        if new_reward_found:
+            print(f"✅ Listo: Se enviaron notificaciones de nuevos premios.")
+        else:
+            print(f"✅ Listo: Base de datos actualizada (Sin premios nuevos).")
 
     except Exception as e:
         print(f"❌ Error general: {e}")
