@@ -3,7 +3,7 @@ import json
 
 # TUS CREDENCIALES
 ONESIGNAL_APP_ID = "7d8ae299-535f-4bbf-a14b-28852b836721" 
-ONESIGNAL_API_KEY = "os_v2_app_pwfofgktl5f37iklfccsxa3heel55ihwmshellmbyom2ftbpso4266ahzv37imv7iw5pgbcmx33x2axhc6z2joylqifdsudeppfb6tq"
+ONESIGNAL_API_KEY = "l55ihwmshellmbyom2ftbpso4"
 
 def test_notification():
     header = {
