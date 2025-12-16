@@ -13,11 +13,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      
       - uses: actions/setup-python@v4
         with:
           python-version: '3.9'
+          
       - run: pip install -r requirements.txt
-      - run: python scraper.py
+      
+      - name: Ejecutar Scraper
+        env: 
+          ONESIGNAL_API_KEY: ${{ secrets.ONESIGNAL_API_KEY }}
+        run: python scraper.py
+        
       - name: Guardar cambios
         run: |
           git config --global user.name 'Bot'
