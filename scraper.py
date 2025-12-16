@@ -1,114 +1,92 @@
 import requests
 from bs4 import BeautifulSoup
 import json
-import datetime
 import re
 
 URL = "https://levvvel.com/coin-master-free-spins/"
 
-# Diccionario para traducir meses de inglés (Levvvel) a número
-MESES_EN = {
-    "Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6,
-    "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12
-}
-
-def obtener_fecha_bonita(texto_fecha):
-    """Convierte 'Dec 15' a 'HOY', 'AYER' o '15 DIC'"""
-    try:
-        # Levvvel suele poner fechas tipo "Dec 15"
-        partes = texto_fecha.split()
-        if len(partes) < 2: return "Reciente"
-        
-        mes_str = partes[0]
-        dia_num = int(partes[1])
-        mes_num = MESES_EN.get(mes_str, 1)
-        
-        hoy = datetime.date.today()
-        # Asumimos año actual
-        fecha_premio = datetime.date(hoy.year, mes_num, dia_num)
-        
-        # Corrección por si el premio es de Dic y estamos en Ene (cambio de año)
-        if fecha_premio > hoy:
-            fecha_premio = datetime.date(hoy.year - 1, mes_num, dia_num)
-
-        if fecha_premio == hoy:
-            return "HOY"
-        elif fecha_premio == hoy - datetime.timedelta(days=1):
-            return "AYER"
-        else:
-            # Formato corto en español
-            meses_es = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"]
-            return f"{dia_num} {meses_es[mes_num - 1]}"
-    except:
-        return "HOY" # Si falla, asumimos hoy
-
-def detectar_tipo(texto):
-    """Define si es 'spin' o 'coin'"""
-    t = texto.lower()
-    if "coin" in t: return "coin"
-    return "spin" # Por defecto tiradas
-
 def update_spins():
     try:
+        # Cabeceras para parecer un navegador real
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
         response = requests.get(URL, headers=headers)
         soup = BeautifulSoup(response.text, 'html.parser')
         
         rewards = []
-        found_urls = set() 
+        found_urls = set()
         
-        # 1. CAMBIO CLAVE: Buscamos filas de tabla (tr) para leer la FECHA
-        filas = soup.find_all('tr')
+        # BUSQUEDA AGRESIVA: Busca cualquier link que vaya al juego
+        all_links = soup.find_all('a', href=True)
         
-        for fila in filas:
-            columnas = fila.find_all('td')
+        # Contador para "adivinar" fechas si no las encontramos
+        count = 0
+        
+        for link in all_links:
+            href = link['href']
             
-            # Levvvel suele tener estructura: [Fecha] [Premio] [Botón]
-            if len(columnas) >= 3:
-                fecha_raw = columnas[0].get_text().strip()
-                texto_premio = columnas[1].get_text().strip()
+            # Filtro: Solo links de Moonactive o Coinmaster
+            if "moonactive" in href or "coinmaster.com" in href:
+                if href in found_urls: continue
                 
-                # Buscar el link dentro de la columna del botón
-                link_tag = columnas[2].find('a')
-                if not link_tag: continue
+                # 1. INTENTAR SACAR EL TÍTULO
+                # A veces el texto está en el link, a veces en el padre
+                texto = link.get_text().strip()
+                parent_text = link.parent.get_text().strip() if link.parent else ""
                 
-                href = link_tag.get('href')
-                if not href: continue
-
-                # --- FILTRO ANTIGUO ---
-                if "levvvel.com" in href: continue
-                is_game_link = "moonactive" in href or "coinmaster.com" in href
+                # Si el link dice "Collect", usamos el texto del contenedor padre
+                if "Collect" in texto or len(texto) < 3:
+                    full_text = parent_text
+                else:
+                    full_text = texto
                 
-                if is_game_link and href not in found_urls:
-                    
-                    # 2. LOGICA NUEVA: FECHA Y TIPO
-                    fecha_final = obtener_fecha_bonita(fecha_raw)
-                    tipo_final = detectar_tipo(texto_premio)
-                    
-                    # Limpieza título
-                    titulo_bonito = texto_premio.title()
-                    if len(titulo_bonito) < 4: titulo_bonito = "Premio Sorpresa"
+                # Limpiamos el texto (Quitamos "Collect", fechas raras, etc)
+                # Buscamos patrones como "25 Spins", "2M Coins"
+                titulo_final = "Premio Sorpresa"
+                match = re.search(r'(\d+\s*(?:Spins|Tiradas|Coins|Monedas).*)', full_text, re.IGNORECASE)
+                if match:
+                    titulo_final = match.group(1).split("Collect")[0].strip() # Limpieza extra
+                else:
+                    # Si no encuentra patrón, usa el texto bruto pero corto
+                    titulo_final = full_text.replace("Collect", "").strip()
+                    if len(titulo_final) > 30: titulo_final = "Tiradas Gratis"
 
-                    rewards.append({
-                        "title": titulo_bonito,
-                        "url": href,
-                        "date": fecha_final, # Ej: "HOY", "AYER"
-                        "type": tipo_final   # Ej: "spin", "coin"
-                    })
-                    found_urls.add(href)
+                # 2. DEFINIR TIPO (Spin vs Coin)
+                tipo = "spin"
+                if "coin" in titulo_final.lower() or "moneda" in titulo_final.lower():
+                    tipo = "coin"
+                
+                # 3. DEFINIR FECHA (Heurística: Los primeros son de Hoy)
+                # Levvvel pone lo nuevo arriba.
+                if count < 4:
+                    fecha = "HOY"
+                elif count < 8:
+                    fecha = "AYER"
+                else:
+                    fecha = "ANTERIOR"
 
-        # Guardar los últimos 40 (para tener historial de "Ayer")
-        final_rewards = rewards[:40]
+                rewards.append({
+                    "title": titulo_final.title(),
+                    "url": href,
+                    "date": fecha,
+                    "type": tipo
+                })
+                
+                found_urls.add(href)
+                count += 1
+                
+                # Limite de seguridad para no guardar basura antigua
+                if count >= 30: break
 
+        # Guardar JSON
         with open('rewards.json', 'w') as f:
-            json.dump(final_rewards, f, indent=2)
+            json.dump(rewards, f, indent=2)
             
-        print(f"¡Éxito! Se guardaron {len(final_rewards)} premios con fechas y tipos.")
+        print(f"¡Recuperados {len(rewards)} premios! (Si sale 0, Levvvel cambió su código).")
 
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error crítico: {e}")
 
 if __name__ == "__main__":
     update_spins()
