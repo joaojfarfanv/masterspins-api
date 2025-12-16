@@ -11,35 +11,39 @@ JSON_FILE = 'rewards.json'
 # --- CREDENCIALES ---
 ONESIGNAL_APP_ID = "7d8ae299-535f-4bbf-a14b-28852b836721"
 
-# 🔥 CLAVE CORRECTA (La de la foto que termina en ...hhqq)
-ONESIGNAL_API_KEY = "os_v2_app_pwfofgktl5f37iklfccsxa3hegxbmhjxb4sejz4iysp346orbznun5ftncebrmabe3ngo42rf24yofomhcxprl2zthajx4h742dlrry".strip()
+# 🔥 CLAVE NUEVA (La que venía en tu código, termina en ...dlrry)
+ONESIGNAL_API_KEY = "os_v2_app_pwfofgktl5f37iklfccsxa3heenpqnrdvhyuhh5xk6k4dvy2elddzls2irtq3lgyof4pnnnhcvpa4loelglgpmwgctdfwscjw6pp2fa".strip()
 
 def send_notification(title, url):
-    """Envía notificación usando la configuración Bearer (V2)"""
+    """Envía notificación con DATA oculta para que abra la APP (Monetización)"""
     
-    # Esta línea nos confirmará si estás usando el archivo nuevo
     print(f"🔑 VERIFICANDO: La clave termina en ...{ONESIGNAL_API_KEY[-5:]}") 
     
     header = {
         "Content-Type": "application/json; charset=utf-8",
-        # IMPORTANTE: Usamos Bearer
         "Authorization": f"Bearer {ONESIGNAL_API_KEY}"
     }
     
     payload = {
         "app_id": ONESIGNAL_APP_ID,
         "headings": {"en": "🎁 ¡Nuevo Premio!", "es": "🎁 ¡Nuevo Premio!"},
-        "contents": {"en": title, "es": title},
-        "url": url,
+        "contents": {"en": "Toca aquí para reclamar tus tiradas", "es": "Toca aquí para reclamar tus tiradas"},
+        
+        # ⛔ ELIMINADO: Ya no enviamos "url" directo para que no salte al navegador.
+        # "url": url, 
+        
+        # ✅ AGREGADO: Enviamos el link en "data". Tu App debe leer "click_url".
+        "data": {"click_url": url},
+        
         "included_segments": ["Total Subscriptions"]
     }
     
     try:
-        print("📡 Enviando petición a OneSignal...")
+        print("📡 Enviando petición a OneSignal (Modo App)...")
         req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
         
         if req.status_code == 200:
-            print(f"✅ ÉXITO: Notificación enviada (Estado 200).")
+            print(f"✅ ÉXITO: Notificación enviada. Al tocarla abrirá TU APP.")
         else:
             print(f"❌ FALLÓ (Estado {req.status_code})")
             print(f"🔍 Mensaje: {req.text}")
