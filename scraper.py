@@ -17,13 +17,11 @@ ONESIGNAL_APP_ID = "7d8ae299-535f-4bbf-a14b-28852b836721"
 ONESIGNAL_API_KEY = os.environ.get("ONESIGNAL_API_KEY")
 
 def send_notification(title, url):
-    """Envía notificación con DATA oculta para que abra la APP (Monetización)"""
+    """Envía notificación"""
     
     # Verificación de seguridad: Si no encuentra la llave en la caja fuerte, avisa.
     if not ONESIGNAL_API_KEY:
         print("❌ ERROR CRÍTICO: No se encontró la llave API.")
-        print("👉 Si estás en tu PC: Configura la variable de entorno.")
-        print("👉 Si estás en GitHub: Asegúrate de haber creado el Secret 'ONESIGNAL_API_KEY'.")
         return
 
     # Solo mostramos los últimos 5 caracteres para verificar que cargó bien
@@ -36,7 +34,7 @@ def send_notification(title, url):
     
     payload = {
         "app_id": ONESIGNAL_APP_ID,
-        "headings": {"en": "🎁 ¡Nuevo Premio!", "es": "🎁 ¡Nuevo Premio!"},
+        "headings": {"en": "🎁 ¡Nueva Recompensa!", "es": "🎁 ¡Nueva Recompensa!"},
         "contents": {"en": "Toca aquí para reclamar tus tiradas", "es": "Toca aquí para reclamar tus tiradas"},
         
         # ✅ Enviamos el link en "data". Tu App debe leer "click_url".
@@ -50,7 +48,7 @@ def send_notification(title, url):
         req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
         
         if req.status_code == 200:
-            print(f"✅ ÉXITO: Notificación enviada. Al tocarla abrirá TU APP.")
+            print(f"✅ ÉXITO: Notificación enviada.")
         else:
             print(f"❌ FALLÓ (Estado {req.status_code})")
             print(f"🔍 Mensaje: {req.text}")
@@ -70,7 +68,7 @@ def load_existing_urls():
 
 def update_spins():
     try:
-        print("🔄 Buscando nuevos premios...")
+        print("🔄 Buscando nuevas recompensas...")
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
         response = requests.get(URL, headers=headers)
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -114,7 +112,7 @@ def update_spins():
                 })
 
                 if count == 0 and href not in existing_urls:
-                    print(f"🚀 ¡NUEVO PREMIO DETECTADO!: {titulo_final}")
+                    print(f"🚀 ¡NUEVA RECOMPENSA ENCONTRADA!: {titulo_final}")
                     send_notification(titulo_final, href)
                     new_reward_found = True
 
