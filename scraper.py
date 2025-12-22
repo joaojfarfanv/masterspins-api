@@ -12,21 +12,24 @@ JSON_FILE = 'rewards.json'
 ONESIGNAL_APP_ID = "7d8ae299-535f-4bbf-a14b-28852b836721"
 
 # 🔒 SEGURIDAD MÁXIMA:
-# Ahora el código busca la llave en los "Secretos" de GitHub.
-# Ya NO la escribimos aquí para que no se borre ni te la roben.
+# Busca la llave en los "Secretos" de GitHub.
 ONESIGNAL_API_KEY = os.environ.get("ONESIGNAL_API_KEY")
 
 def send_notification(title, url):
-    """Envía notificación"""
+    """Envía notificación con TEXTO PERSONALIZADO"""
     
-    # Verificación de seguridad: Si no encuentra la llave en la caja fuerte, avisa.
+    # Verificación de seguridad
     if not ONESIGNAL_API_KEY:
         print("❌ ERROR CRÍTICO: No se encontró la llave API.")
         return
 
-    # Solo mostramos los últimos 5 caracteres para verificar que cargó bien
     print(f"🔑 Llave cargada desde Secrets (Termina en ...{ONESIGNAL_API_KEY[-5:]})") 
     
+    # --- AQUÍ ESTÁ EL CAMBIO DE TEXTO ---
+    # 'title' contiene la cantidad (ej: "50 spins")
+    # El mensaje final será: "¡50 spins encontradas! Presiona para reclamar."
+    mensaje_personalizado = f"¡{title} encontradas! Presiona para reclamar."
+
     header = {
         "Content-Type": "application/json; charset=utf-8",
         "Authorization": f"Bearer {ONESIGNAL_API_KEY}"
@@ -34,10 +37,10 @@ def send_notification(title, url):
     
     payload = {
         "app_id": ONESIGNAL_APP_ID,
-        "headings": {"en": "🎁 ¡Nueva Recompensa!", "es": "🎁 ¡Nueva Recompensa!"},
-        "contents": {"en": "Toca aquí para reclamar tus tiradas", "es": "Toca aquí para reclamar tus tiradas"},
+        "headings": {"en": "🎁 Nueva recompensa encontrada", "es": "🎁 Nueva recompensa encontrada"},
+        "contents": {"en": mensaje_personalizado, "es": mensaje_personalizado},
         
-        # ✅ Enviamos el link en "data". Tu App debe leer "click_url".
+        # ✅ Enviamos el link en "data" para que la App lo lea
         "data": {"click_url": url},
         
         "included_segments": ["Total Subscriptions"]
@@ -48,7 +51,7 @@ def send_notification(title, url):
         req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
         
         if req.status_code == 200:
-            print(f"✅ ÉXITO: Notificación enviada.")
+            print(f"✅ ÉXITO: Notificación enviada: {mensaje_personalizado}")
         else:
             print(f"❌ FALLÓ (Estado {req.status_code})")
             print(f"🔍 Mensaje: {req.text}")
@@ -101,6 +104,7 @@ def update_spins():
 
                 if len(titulo_final) > 30: titulo_final = "Tiradas Gratis"
 
+                # Lógica de fechas
                 if count < 4: fecha = "HOY"
                 elif count < 8: fecha = "AYER"
                 else: fecha = "ANTERIOR"
