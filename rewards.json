@@ -1,6 +1,16 @@
 [
   {
     "title": "50 spins",
+    "url": "https://rewards.coinmaster.com/rewards/rewards.html?c=pe_CHATBbVEdQd_20260120",
+    "date": "HOY"
+  },
+  {
+    "title": "25 spins",
+    "url": "https://rewards.coinmaster.com/rewards/rewards.html?c=pe_EMAILDFKKss_20260118",
+    "date": "HOY"
+  },
+  {
+    "title": "50 spins",
     "url": "https://rewards.coinmaster.com/rewards/rewards.html?c=pe_FCBTgrwjt_20260119",
     "date": "HOY"
   },
@@ -12,12 +22,12 @@
   {
     "title": "50 spins",
     "url": "https://rewards.coinmaster.com/rewards/rewards.html?c=pe_HELPzIXrGD_20260120",
-    "date": "HOY"
+    "date": "AYER"
   },
   {
     "title": "50 spins",
     "url": "https://rewards.coinmaster.com/rewards/rewards.html?c=pe_INSguNwSo_20260119",
-    "date": "HOY"
+    "date": "AYER"
   },
   {
     "title": "100 spins",
@@ -32,12 +42,12 @@
   {
     "title": "50 spins",
     "url": "https://rewards.coinmaster.com/rewards/rewards.html?c=pe_FCBpzfDCG_20260119",
-    "date": "AYER"
+    "date": "ANTERIOR"
   },
   {
     "title": "100 spins",
     "url": "https://rewards.coinmaster.com/rewards/rewards.html?c=pe_RICHslCpcY_20260118",
-    "date": "AYER"
+    "date": "ANTERIOR"
   },
   {
     "title": "25 spins",
@@ -137,16 +147,6 @@
   {
     "title": "50 spins",
     "url": "https://coinmaster.onelink.me/2792196939?af_xp=social&pid=Reward%20link&deep_link_value=coinmaster%3A%2F%2F&deep_link_sub1=promotions&af_dp=coinmaster%3A%2F%2Fpromotions&af_force_deeplink=true&c=pe_EMAILSEnVDE_20260115&af_web_dp=https%3A%2F%2Frewards.coinmaster.com%2Frewards%2Fplayonmobile.png&af_adset=EMAIL&af_ad=no_refferer",
-    "date": "ANTERIOR"
-  },
-  {
-    "title": "50 spins",
-    "url": "https://coinmaster.onelink.me/2792196939?af_xp=social&pid=Reward%20link&deep_link_value=coinmaster%3A%2F%2F&deep_link_sub1=promotions&af_dp=coinmaster%3A%2F%2Fpromotions&af_force_deeplink=true&c=pe_HELPuWNLMS_20260116&af_web_dp=https%3A%2F%2Frewards.coinmaster.com%2Frewards%2Fplayonmobile.png&af_adset=no_source&af_ad=no_refferer",
-    "date": "ANTERIOR"
-  },
-  {
-    "title": "50 spins",
-    "url": "https://coinmaster.onelink.me/2792196939?af_xp=social&pid=Reward%20link&deep_link_value=coinmaster%3A%2F%2F&deep_link_sub1=promotions&af_dp=coinmaster%3A%2F%2Fpromotions&af_force_deeplink=true&c=pe_FCBjYQmem_20260115&af_web_dp=https%3A%2F%2Frewards.coinmaster.com%2Frewards%2Fplayonmobile.png&af_adset=FCB&af_ad=no_refferer",
     "date": "ANTERIOR"
   }
 ]
