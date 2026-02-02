@@ -1,6 +1,11 @@
 [
   {
     "title": "100 spins",
+    "url": "https://rewards.coinmaster.com/rewards/rewards.html?c=pe_FCBsKqADN_20260202",
+    "date": "HOY"
+  },
+  {
+    "title": "100 spins",
     "url": "https://rewards.coinmaster.com/rewards/rewards.html?c=pe_TWIAhUIhX_20260202",
     "date": "HOY"
   },
@@ -17,7 +22,7 @@
   {
     "title": "100 spins",
     "url": "https://rewards.coinmaster.com/rewards/rewards.html?c=pe_RICHhaaGod_20260118",
-    "date": "HOY"
+    "date": "AYER"
   },
   {
     "title": "100 spins",
@@ -37,7 +42,7 @@
   {
     "title": "100 spins",
     "url": "https://rewards.coinmaster.com/rewards/rewards.html?c=pe_FCBVmnClj_20260201",
-    "date": "AYER"
+    "date": "ANTERIOR"
   },
   {
     "title": "25 spins",
@@ -142,11 +147,6 @@
   {
     "title": "25 spins",
     "url": "https://rewards.coinmaster.com/rewards/rewards.html?c=pe_EMAILtxbtBV_20260128",
-    "date": "ANTERIOR"
-  },
-  {
-    "title": "100 spins",
-    "url": "https://rewards.coinmaster.com/rewards/rewards.html?c=pe_LINEpCteDF_20260130",
     "date": "ANTERIOR"
   }
 ]
